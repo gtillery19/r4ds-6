@@ -14,6 +14,7 @@ library(dbplyr)
 ```
 
 ```{r}
+#| message: false
 con <- dbConnect(duckdb(), "data/atus.duckdb", read_only = TRUE)
 
 dbplyr_act <- tbl(con, "activities")
@@ -23,6 +24,7 @@ dbplyr_codes <- tbl(con, "activity_codes")
 
 ```{r}
 #| cache: true
+#| message: false
 activity_avg <- dbplyr_act |>
   inner_join(
     dbplyr_resp |>
@@ -35,9 +37,9 @@ activity_avg <- dbplyr_act |>
     by = "activity_code"
   ) |>
   group_by(tucaseid, sex, major_name) |>
-  summarize(minutes = sum(duration_min, na.rm = TRUE)) |>
+  summarize(minutes = sum(duration_min, na.rm = TRUE), .groups = "drop") |>
   group_by(sex, major_name) |>
-  summarize(minutes = mean(minutes, na.rm = TRUE)) |>
+  summarize(minutes = mean(minutes, na.rm = TRUE), .groups = "drop") |>
   collect()
 ```
 
@@ -66,8 +68,6 @@ hourly_avg <- dbplyr_act |>
   group_by(sex, hour, major_name) |>
   summarize(avg_min = mean(duration_min, na.rm = TRUE), .groups = "drop") |>
   collect()
-
-print(hourly_avg)
 ```
 
 ```{r}
